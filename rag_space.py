@@ -1,6 +1,9 @@
 import wikipediaapi
 from sentence_transformers import SentenceTransformer
 import numpy as np
+import anthropic
+from dotenv import load_dotenv
+import os
 
 wiki = wikipediaapi.Wikipedia(user_agent="rag-learning-project", language="en")
 page = wiki.page("Perseverance (rover)")
@@ -52,3 +55,33 @@ for chunk, score in results:
     print(f"Score: {score:.4f}")
     print(f"Chunk: {chunk[:200]}...")
     print()
+
+load_dotenv()
+client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+
+def generate_answer(query, retrieved_chunks):
+    context = "\n\n".join([chunk for chunk, score in retrieved_chunks])
+
+    prompt = f"""Answer the question using only the context below. If the context doesn't contain the answer, say so.
+
+Context:
+{context}
+
+Question: {query}
+
+Answer:"""
+    
+    response = client.messages.create(
+        model="claude-sonnet-4-5",
+        max_tokens=300,
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    return response.content[0].text
+
+query = "When did the rover land on Mars?"
+retrieved = retrieve(query, chunks, chunk_embeddings, model, k=2)
+answer = generate_answer(query, retrieved)
+
+print(f"Question: {query}")
+print(f"Answer: {answer}")
