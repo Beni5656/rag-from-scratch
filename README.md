@@ -24,7 +24,7 @@ Given a Wikipedia article, this pipeline:
 ## Setup
 
 ```bash
-git clone <your-repo-url>
+git clone <https://github.com/Beni5656/rag-from-scratch>
 cd rag-from-scratch
 
 python3 -m venv venv
